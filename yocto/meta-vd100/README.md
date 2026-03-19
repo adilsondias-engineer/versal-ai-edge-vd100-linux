@@ -331,39 +331,64 @@ sudo gpioinfo --chip gpiochip0        # list all 58 lines
 **C++ toggle with persistent state (libgpiod v2):**
 
 ```cpp
+#include <string>
+#include <stdio.h>
+#include <iostream>
+#include <ctime>
 #include <gpiod.hpp>
-#include <fstream>
 #include <filesystem>
+#include <cstdlib>
+#include <fstream>
 
-const std::filesystem::path STATE_FILE = "/var/run/led25.state";
-const std::filesystem::path CHIP_PATH  = "/dev/gpiochip0";
-const ::gpiod::line::offset LINE = 25;
+using namespace std;
 
-int main() {
+const ::std::filesystem::path chip_path("/dev/gpiochip0");
+const ::gpiod::line::offset line_offset = 25;
+const std::filesystem::path STATE_FILE = "/var/run/led25.state"; //persist state
+
+int main()
+{
+
+   // Display the date and time represented by the timestamp
+   cout << ctime(&timestamp);
+
+    // Read persisted state — default inactive if no file
     bool active = false;
     if (std::filesystem::exists(STATE_FILE)) {
         std::ifstream f(STATE_FILE);
         f >> active;
     }
+
+
+    ::std::cout << line_offset << " 1=" << " last known state=" << active  << ::std::endl;
+    // Toggle
     active = !active;
 
-    auto request = ::gpiod::chip(CHIP_PATH)
-        .prepare_request()
-        .set_consumer("vd100-led")
-        .add_line_settings(LINE,
-            ::gpiod::line_settings()
-                .set_direction(::gpiod::line::direction::OUTPUT)
-                .set_output_value(active
-                    ? ::gpiod::line::value::ACTIVE
-                    : ::gpiod::line::value::INACTIVE))
-        .do_request();
+   auto request = ::gpiod::chip(chip_path)
+                          .prepare_request()
+                          .set_consumer("get-line-value")
+                          .add_line_settings(
+                              line_offset,
+                              ::gpiod::line_settings().set_direction(
+                                  ::gpiod::line::direction::OUTPUT))
+                          .do_request();
+  ::std::cout << line_offset << " current=" << (request.get_value(line_offset) == ::gpiod::line::value::ACTIVE ? "Active" : "Inactive") << ::std::endl;
 
+   if (active)
+   {
+      request.set_value(line_offset, gpiod::line::value::ACTIVE); // on
+   }else{
+      request.set_value(line_offset, gpiod::line::value::INACTIVE); // off
+   }
+   // Persist new state
     std::ofstream f(STATE_FILE);
     f << active;
 
-    std::cout << "LED " << LINE << " = " << (active ? "ON" : "OFF") << std::endl;
-    return 0;
+   std::cout << line_offset << " 2=" << " current state=" << active  << " :" << (request.get_value(line_offset) == ::gpiod::line::value::ACTIVE ? "Active" : "Inactive") << ::std::endl;
+
+   return 0;
 }
+//$CXX $CFLAGS helloworld.cpp -o helloworld $LDFLAGS -lgpiodcxx -lgpiod
 ```
 
 **libgpiod v2 key rules:**
