@@ -1,7 +1,6 @@
 # yocto/build — Build Environment
 
-Yocto build environment for VD100 Linux 1.0. Contains the build configuration (`local.conf`, `bblayers.conf`) and workspace.
-
+Yocto build environment for VD100 Linux 1.0, built on the **AMD Embedded Development Framework (EDF)**. EDF provides the Versal-specific image recipes, boot configuration, systemd-boot integration, and PLM/PSM firmware build infrastructure.
 ---
 
 ## Prerequisites

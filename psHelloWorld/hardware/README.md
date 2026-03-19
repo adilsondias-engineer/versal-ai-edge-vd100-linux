@@ -24,6 +24,7 @@ psHelloWorld/
 - Vivado 2025.2 (ML Enterprise License)
 - Alinx VD100 board (XCVE2302-SFVA784-1LP-E-S)
 - USB-UART cable for JTAG/serial console
+- AMD Embedded Development Framework (EDF) — meta-amd-edf layer (rel-v2025.2)
 
 ---
 

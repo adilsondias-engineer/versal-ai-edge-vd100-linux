@@ -40,6 +40,7 @@ Every existing Versal Yocto tutorial:
 - Targets the VCK190 evaluation kit ($15K+)
 - Uses MATLAB/Simulink for hardware design
 - Relies on AMD reference BSPs with pre-built PDIs
+- Built on **AMD Embedded Development Framework (EDF)** — the production-grade AMD Yocto distro for Versal and Zynq platforms
 
 This project:
 - Runs on the **Alinx VD100** — an accessible, production-grade board

@@ -1,6 +1,6 @@
 # Versal AI Edge VD100 — Linux Platform
 
-Custom Yocto Linux on the Alinx VD100 (XCVE2302-SFVA784-1LP-E-S) — from Vivado project to a fully booting, production-grade embedded Linux platform with peripheral support.
+Custom Yocto Linux on the Alinx VD100 using the **AMD Embedded Development Framework (EDF)** — from Vivado project to a fully booting, production-grade embedded Linux platform.
 
 > No VCK190. No MATLAB. No Simulink. Bare-metal VHDL, a UART, and a debugger's mindset.
 
@@ -80,6 +80,7 @@ Start with the hardware README, follow the chain to the Yocto README.
 
 - **Vivado / Vitis:** 2025.2 (ML Enterprise License)
 - **Yocto:** Scarthgap (5.0), meta-xilinx `rel-v2025.2`
+- **AMD EDF:** AMD Embedded Development Framework
 - **Build host:** Ubuntu 22.04
 - **Target kernel:** `6.12.40-xilinx`
 
