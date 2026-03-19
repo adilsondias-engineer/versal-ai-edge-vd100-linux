@@ -1,0 +1,94 @@
+# Versal AI Edge VD100 — Linux Platform
+
+Custom Yocto Linux on the Alinx VD100 (XCVE2302-SFVA784-1LP-E-S) — from Vivado project to a fully booting, production-grade embedded Linux platform with peripheral support.
+
+> No VCK190. No MATLAB. No Simulink. Bare-metal VHDL, a UART, and a debugger's mindset.
+
+---
+
+## The Platform
+
+```
+Vivado 2025.2
+    └─ CIPS configuration + PL design → XSA export
+        └─ lopper / sdtgen → System Device Tree (vd100_sdt)
+            └─ Yocto Scarthgap + meta-vd100
+                └─ VD100 Linux 1.0
+                    ├─ PLM → U-Boot → systemd-boot → Linux
+                    ├─ Ethernet, USB, I2C, GPIO, Sysmon
+                    └─ C++ application deployment via RPM
+```
+
+---
+
+## Repository Structure
+
+| Path | Contents |
+|---|---|
+| `psHelloWorld/hardware/` | Vivado 2025.2 project — CIPS configuration, PL hello world design, XSA export |
+| `psHelloWorld/software/vd100_sdt/` | System Device Tree generated from XSA via lopper/sdtgen |
+| `psHelloWorld/software/hello_world/` | Vitis bare-metal application |
+| `psHelloWorld/software/myhelloworld/` | Custom bare-metal application |
+| `yocto/meta-vd100/` | Custom Yocto layer — distro config, BSP, machine config, DTS patches, recipes |
+| `yocto/build/` | Build environment — `local.conf`, `bblayers.conf` |
+| `images/` | Terminal screenshots and boot photos |
+
+---
+
+## Board
+
+| Item | Detail |
+|---|---|
+| **Device** | XCVE2302-SFVA784-1LP-E-S |
+| **Family** | Versal AI Edge Series |
+| **PS** | Dual-core Cortex-A72 @ 959 MHz |
+| **DDR** | 2 GiB |
+| **eMMC** | 29.6 GiB |
+| **Cost** | ~AU$1,285 — accessible alternative to the AU$15,000+ VCK190 |
+
+---
+
+## Confirmed Working Peripherals
+
+| Peripheral | Status |
+|---|---|
+| SD card (via TXS02612 level shifter) | ✅ |
+| Ethernet GEM | ✅ |
+| USB XHCI (host mode) | ✅ |
+| I2C0 / I2C1 / I2C2 | ✅ |
+| LM75 board temperature sensor | ✅ |
+| EEPROM Atmel 24C04 | ✅ |
+| Versal sysmon (die temperature + voltages) | ✅ |
+| GPIO — PS_LED1 (LPD_MIO25) | ✅ |
+| PMC GPIO | ✅ |
+| RTC | ✅ |
+
+---
+
+## Documentation
+
+- **[psHelloWorld/hardware/README.md](psHelloWorld/hardware/README.md)** — Vivado project setup, CIPS configuration, XSA export
+- **[psHelloWorld/software/vd100_sdt/README.md](psHelloWorld/software/vd100_sdt/README.md)** — System Device Tree generation from XSA
+- **[yocto/build/README.md](yocto/build/README.md)** — Build environment setup, local.conf, how to build
+- **[yocto/meta-vd100/README.md](yocto/meta-vd100/README.md)** — Complete Yocto bring-up reference: DTS patches, boot configuration, hardware quirks, GPIO, hardware monitoring, SDK workflow
+
+Start with the hardware README, follow the chain to the Yocto README.
+
+---
+
+## Development Environment
+
+- **Vivado / Vitis:** 2025.2 (ML Enterprise License)
+- **Yocto:** Scarthgap (5.0), meta-xilinx `rel-v2025.2`
+- **Build host:** Ubuntu 22.04
+- **Target kernel:** `6.12.40-xilinx`
+
+---
+
+## Related Projects
+
+This platform is part of a broader FPGA portfolio targeting ultra-low latency market data processing on Versal and Artix-7 platforms.
+
+---
+
+*XCVE2302 — Versal AI Edge — VD100 Linux 1.0 — Vivado/Vitis 2025.2*

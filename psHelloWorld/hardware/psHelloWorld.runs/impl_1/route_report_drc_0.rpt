@@ -1,0 +1,67 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
+| Date         : Sat Mar 14 22:09:05 2026
+| Host         : Mercury running 64-bit major release  (build 9200)
+| Command      : report_drc -file route_report_drc_0.rpt -pb route_report_drc_0.pb -rpx route_report_drc_0.rpx
+| Design       : design_1_wrapper
+| Device       : xcve2302-sfva784-1LP-e-S
+| Speed File   : -1LP
+| Design State : Fully Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Report DRC
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+           Ruledeck: default
+             Max checks: <unlimited>
+             Checks found: 3
++-----------+----------+---------------------+--------+
+| Rule      | Severity | Description         | Checks |
++-----------+----------+---------------------+--------+
+| CSUC-1    | Warning  | Unconnected channel | 2      |
+| RTSTAT-10 | Warning  | No routable loads   | 1      |
++-----------+----------+---------------------+--------+
+
+2. REPORT DETAILS
+-----------------
+CSUC-1#1 Warning
+Unconnected channel  
+HW Debug port design_1_i/versal_cips_0/pl0_ref_clk is unconnected.  Unconnected channels may cause errors during implementation.  Since this port cannot be removed, please connect this port or remove the associated debug core.
+Related violations: <none>
+
+CSUC-1#2 Warning
+Unconnected channel  
+HW Debug port design_1_i/versal_cips_0/pl0_resetn is unconnected.  Unconnected channels may cause errors during implementation.  Since this port cannot be removed, please connect this port or remove the associated debug core.
+Related violations: <none>
+
+RTSTAT-10#1 Warning
+No routable loads  
+4828 net(s) have no routable loads. The problem bus(es) and/or net(s) are design_1_i/versal_cips_0/U0/pspmc_0/U0/apu_event_o,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/apu_event_standby_wfe[1:0],
+design_1_i/versal_cips_0/U0/pspmc_0/U0/apu_event_standby_wfi[1:0],
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_capture,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_drck,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_reset,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_runtest,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_sel,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_shift,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_tck,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_tdi,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_tms,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user1_usr_update,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user2_usr_capture,
+design_1_i/versal_cips_0/U0/pspmc_0/U0/bscan_user2_usr_drck
+ (the first 15 of 908 listed nets/buses).
+Related violations: <none>
+
+

@@ -1,0 +1,21 @@
+create libxil.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/zdma/src/libzdma.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/usbpsu/src/libusbpsu.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/uartpsv/src/libuartpsv.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/uartlite/src/libuartlite.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/ttcps/src/libttcps.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/trngpsv/src/libtrngpsv.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/sysmonpsv/src/libsysmonpsv.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/sdps/src/libsdps.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/scugic/src/libscugic.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/rtcpsu/src/librtcpsu.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/qspipsu/src/libqspipsu.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/ipipsu/src/libipipsu.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/gpiops/src/libgpiops.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/emacps/src/libemacps.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/csudma/src/libcsudma.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/coresightps_dcc/src/libcoresightps_dcc.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/cfupmc/src/libcfupmc.a
+addlib J:/work/projects/versal/psHelloWorld/software/myhelloworld/psv_cortexa72_0/standalone_psv_cortexa72_0/bsp/libsrc/build_configs/gen_bsp/libsrc/cframe/src/libcframe.a
+save
+end
