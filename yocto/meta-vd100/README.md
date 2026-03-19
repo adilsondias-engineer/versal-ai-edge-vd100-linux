@@ -422,8 +422,8 @@ Do not use `--sysroot=${SDKTARGETSYSROOT}` — undefined in bitbake context.
 ### Deploy via RPM over SSH
 
 ```bash
-scp app.rpm adilson@192.168.0.x:~
-ssh adilson@192.168.0.x "sudo rpm -i app.rpm"
+scp app.rpm YOURUSER@192.168.0.x:~
+ssh YOURUSER@192.168.0.x "sudo rpm -i app.rpm"
 ```
 
 ---
