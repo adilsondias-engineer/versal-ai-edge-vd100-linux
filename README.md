@@ -531,7 +531,7 @@ Only the boot partition (`mmcblk1p1`) needs updating after a DTB-only change. Co
 
 ## Related Projects
 
-This bring-up is part of a broader FPGA trading systems portfolio targeting ultra-low latency market data processing on Versal and Artix-7 platforms. The PS bring-up work here underpins AXI-connected PL IP and kernel driver development for hardware-accelerated applications.
+This bring-up is part of a broader FPGA systems portfolio for data processing on Versal, Kintex-7 and Artix-7 platforms. The PS bring-up work here underpins AXI-connected PL IP and kernel driver development for hardware-accelerated applications.
 
 ---
 
