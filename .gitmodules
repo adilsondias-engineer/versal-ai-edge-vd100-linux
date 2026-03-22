@@ -1,0 +1,6 @@
+[submodule "meta-vd100"]
+	path = meta-vd100
+	url = https://github.com/adilsondias-engineer/meta-vd100.git
+[submodule "meta-vd100_v2"]
+	path = meta-vd100_v2
+	url = https://github.com/adilsondias-engineer/meta-vd100_v2
