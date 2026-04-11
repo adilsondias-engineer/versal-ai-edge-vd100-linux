@@ -12,11 +12,14 @@ This repository is the umbrella project for VD100 Linux bring-up. Each Yocto lay
 | Submodule | Content |
 |---|---|
 | [`meta-vd100`](https://github.com/adilsondias-engineer/meta-vd100) | v1 — SD boot, Ethernet, USB, SSH |
-| [`meta-vd100_v2`](https://github.com/adilsondias-engineer/meta-vd100_v2) | v2 — + I2C, LM75, EEPROM, sysmon, GPIO, libgpiod |
+| [`meta-vd100_v2`](https://github.com/adilsondias-engineer/meta-vd100_v2) | v2 — + I2C, LM75, EEPROM, sysmon, GPIO, libgpiod, PL LED, PS_KEY IRQ |
+| [`meta-vd100_v3`](https://github.com/adilsondias-engineer/meta-vd100_v3) | v3 — + XRT 2025.2, zocl, AIE-ML v2 pipeline, BOOT.BIN CDO fix, Ethereum |
 
 ```bash
 git clone --recurse-submodules https://github.com/adilsondias-engineer/versal-ai-edge-vd100-linux
 ```
+
+> v3 depends on artifacts from [vd100-aie-pipeline](https://github.com/adilsondias-engineer/vd100-aie-pipeline) — see the v3 README for details.
 
 ---
 
@@ -27,7 +30,7 @@ git clone --recurse-submodules https://github.com/adilsondias-engineer/versal-ai
 | **Device** | XCVE2302-SFVA784-1LP-E-S |
 | **Family** | Versal AI Edge Series |
 | **PS** | Dual-core Cortex-A72 @ 959 MHz |
-| **PL** | AI Engine ML array (AIE-ML) |
+| **PL** | AI Engine ML array (AIE-ML v2) |
 | **DDR** | 2 GiB |
 | **eMMC** | 29.6 GiB |
 | **SD** | MicroSD via TXS02612 level shifter (BANK501 = 1.8V, SD = 3.3V) |
@@ -59,11 +62,46 @@ Every existing Versal Yocto tutorial:
 
 This project:
 - Runs on the **Alinx VD100** — an accessible, production-grade board
-- Uses **bare-metal VHDL** for PL design in Vivado (`ledblink` project)
+- Uses **bare-metal VHDL** for PL design in Vivado
 - Builds a **complete custom Yocto distro** (`vd100`) from the System Device Tree exported from Vivado
 - Documents every hardware quirk specific to the VD100 that no reference design covers
 - Brings up all onboard PS peripherals: Ethernet, USB, I2C, sysmon, temperature sensor, EEPROM, GPIO
-- Demonstrates **PS/PL co-design**: PS LED via libgpiod userspace app, PL LED via AXI-lite kernel module
+- Demonstrates **PS/PL co-design**: PS LED via libgpiod, PL LED via AXI-lite kernel module
+- Delivers a **complete AIE-ML v2 pipeline** (v3): HLS DMA + AIE graph + XRT host app + Ethereum audit log — first documented end-to-end integration on accessible Versal hardware
+
+---
+
+## Confirmed Working
+
+| Feature | v1 | v2 | v3 |
+|---|---|---|---|
+| Cold boot → Linux login | Y | Y | Y |
+| Automatic boot (no intervention) | Y | Y | Y |
+| SD card — mode `0101` (SD 2.0) | Y | Y | Y |
+| SD card — mode `1110` (SD 3.0 LS) | Y | Y | Y |
+| Ethernet (GEM `ff0c0000`) | Y | Y | Y |
+| USB XHCI | Y | Y | Y |
+| SSH access | Y | Y | Y |
+| Custom distro name (`vd100`) | — | Y | Y |
+| RPM package deployment | Y | Y | Y |
+| Custom C++ application | Y | Y | Y |
+| Custom PL bitstream (PDI) | Y | Y | Y |
+| I2C0 / I2C1 / I2C2 | — | Y | Y |
+| LM75 board temperature sensor | — | Y | Y |
+| EEPROM Atmel 24C04 | — | Y | Y |
+| Versal sysmon die temperature | — | Y | Y |
+| PS_LED1 GPIO via libgpiod v2 | — | Y | Y |
+| PL LED via AXI-lite kernel module (`myledip`) | — | Y | Y |
+| PS_KEY IRQ → LED toggle | — | Y | Y |
+| Persistent LED state | — | Y | Y |
+| Yocto SDK cross-compile | — | Y | Y |
+| NTP time sync (no RTC battery) | — | Y | Y |
+| XRT 2025.2 runtime | — | — | Y |
+| zocl kernel driver | — | — | Y |
+| AIE-ML v2 pipeline (BOOT.BIN CDOs) | — | — | Y |
+| `vd100-ps-ma-client` XRT host app | — | — | Y |
+| MA crossover BUY/SELL/HOLD signal | — | — | Y |
+| Ethereum on-chain signal log | — | — | Y |
 
 ---
 
@@ -89,8 +127,6 @@ The VD100 connects the SD card through a **TXS02612 bidirectional level shifter*
 |---|---|---|---|
 | `1110` | **SD1 LS — level-shifter mode, matches Vivado CIPS config** | OFF OFF OFF ON | Recommended |
 | `0101` | SD1 SD 2.0 — also works due to DTB 25 MHz cap | ON OFF ON OFF | Works |
-
-Both modes boot successfully. `1110` is the correct configuration — it matches the SD 3.0 setting in Vivado CIPS and is designed for the TXS02612 hardware. `0101` works as a side effect of the `max-frequency = <25000000>` DTB patch capping the clock regardless of mode.
 
 ---
 
@@ -185,6 +221,7 @@ All PS peripherals confirmed operational under VD100 Linux 1.0:
 | PMC DMA × 2 | `f11c0000 / f11d0000` | Y | present |
 | LPD DMA × 8 | `ffa80000–ffaf0000` | Y | present |
 | PS_LED1 | LPD_MIO25 — GPIO line 25 | Y | libgpiod v2 |
+| AIE-ML v2 array | col 8, row 0 | Y | v3 — via XRT + zocl |
 
 ---
 
@@ -244,15 +281,28 @@ Note: i2c0 (`ff020000`) and i2c1 (`ff030000`) also enabled with `status = "okay"
         clock-names = "s00_axi_aclk";
     };
 };
+```
+
+### zocl — AIE kernel driver (v3, sdtgen generated)
+
+```bash
+# Generate correct 32-IRQ zocl DT node — do NOT hand-craft
+sdtgen set_dt_param -dir sdt_out -zocl enable
+```
+
+The generated node uses `interrupts-extended = <&axi_intc_0 0 4>` through
+`<&axi_intc_0 31 4>` — 32 IRQs from the AXI interrupt controller.
+Hand-crafting 4 GIC SPI IRQs causes wrong hardware state reporting and kernel panics.
 
 ### DTB verification after rebuild
 
 ```bash
 dtc -I dtb -O dts cortexa72-linux.dtb 2>/dev/null | \
-  grep -E "no-1-8-v|disable-wp|max-frequency|dwc3|lm75|24c04|MyLEDIP"
+  grep -E "no-1-8-v|disable-wp|max-frequency|dwc3|lm75|24c04|MyLEDIP|zocl"
 ```
 
-All seven tokens must be present. A missing `no-1-8-v` means the sdhci1 patch failed; a missing `MyLEDIP` means the PL peripheral node was not applied — check DTS syntax before rebuilding.
+All tokens must be present. A missing `no-1-8-v` means the sdhci1 patch failed;
+a missing `zocl` means the AIE driver node was not applied.
 
 ---
 
@@ -274,7 +324,6 @@ cat /sys/class/hwmon/hwmon0/in*_input
 ### LM75 board temperature (I2C2)
 
 ```bash
-# After i2c2 enabled in DTB
 cat /sys/bus/i2c/devices/2-0048/hwmon/hwmon*/temp1_input
 # Returns millidegrees — divide by 1000
 ```
@@ -283,12 +332,6 @@ cat /sys/bus/i2c/devices/2-0048/hwmon/hwmon*/temp1_input
 
 ```bash
 hexdump -C /sys/bus/i2c/devices/2-0050/eeprom
-```
-
-### RTC
-
-```bash
-hwclock   # works while powered — resets on poweroff (no battery)
 ```
 
 ---
@@ -303,45 +346,6 @@ hwclock   # works while powered — resets on poweroff (no battery)
 | libgpiod version | **v2** — `--chip` flag is mandatory (breaking change from v1) |
 | LED on | `sudo gpioset --chip gpiochip0 25=1` |
 | LED off | `sudo gpioset --chip gpiochip0 25=0` |
-| State persistence | `/var/run/led25.state` (tmpfs — intentionally cleared on reboot) |
-
-**libgpiod v2 rule:** each `do_request()` takes exclusive ownership of the line. Never create a second request to read an output line — reuse the same request object. For stateless processes (run-exit), persist the driven state to `/var/run/`.
-
----
-
-## PS / PL LED Architecture
-
-The `ledblink` Vivado project demonstrates both PS and PL LED control from a single Linux image — two independent paths, two independent recipes.
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    VD100 Linux 1.0                      │
-│                                                         │
-│  ┌─────────────────┐       ┌─────────────────────────┐  │
-│  │   helloworld    │       │        myledip          │  │
-│  │  (userspace)    │       │    (kernel module)      │  │
-│  │                 │       │                         │  │
-│  │  libgpiod v2    │       │  /dev/myledip           │  │
-│  │  gpiochip0      │       │  platform_driver        │  │
-│  │  line 25        │       │  of_match_table         │  │
-│  └────────┬────────┘       └───────────┬─────────────┘  │
-│           │                            │                 │
-└───────────┼────────────────────────────┼─────────────────┘
-            │                            │
-            ▼                            ▼
-   ┌─────────────────┐        ┌────────────────────┐
-   │   PS LPD GPIO   │        │   AXI-lite slave   │
-   │   LPD_MIO25     │        │   (PL fabric)      │
-   │   PS_LED1       │        │   ledblink IP      │
-   └─────────────────┘        └────────────────────┘
-```
-
-| LED | Path | Interface | Recipe | Layer |
-|---|---|---|---|---|
-| PS_LED1 | PS LPD_MIO25 | libgpiod v2 → gpiochip0 line 25 | `recipes-apps/helloworld` | `meta-vd100_v2` |
-| PL LED | AXI-lite → PL fabric | kernel module → `/dev/myledip` | `recipes-modules/myledip` | `meta-vd100_v2` |
-
-The PL LED is controlled by the `myledip` kernel module, which registers as a platform driver and binds to the AXI-lite slave exported from the `ledblink` Vivado project via the System Device Tree. The device tree compatible string in the SDT node matches the `of_match_table` in the module, enabling automatic probe on boot.
 
 ---
 
@@ -355,7 +359,6 @@ The PL LED is controlled by the `myledip` kernel module, which registers as a pl
 | meta-xilinx branch | `rel-v2025.2` |
 | Base image | `edf-linux-disk-image` (AMD Embedded Development Framework) |
 | BSP type | SDT (System Device Tree) |
-| SDT source | Vivado-exported `vd100_sdt` |
 | Machine | `versal-generic-xcve2302` |
 | Distro | `vd100` |
 | Package format | RPM (deb has 43 broken Xilinx package names) |
@@ -363,18 +366,19 @@ The PL LED is controlled by the `myledip` kernel module, which registers as a pl
 
 ---
 
-## OS Customisation (Yocto Layer — `meta-vd100_v2`)
+## OS Customisation (Yocto Layers)
 
 All customisation belongs in the custom layer. Never modify upstream layers directly.
 
 ### Critical distro rule
 
-`vd100.conf` must `require amd-edf.conf` — **not** `poky.conf`. The AMD EDF config preserves the full Versal firmware stack including PLM, PDI handling, and Versal-specific boot artefacts. Replacing it with `poky.conf` strips essential Versal components.
+`vd100.conf` must `require amd-edf.conf` — **not** `poky.conf`. The AMD EDF config
+preserves the full Versal firmware stack including PLM, PDI handling, and
+Versal-specific boot artefacts. Replacing it with `poky.conf` strips essential
+Versal components.
 
 ```bitbake
-# meta-vd100_v2/conf/distro/vd100.conf
 require conf/distro/amd-edf.conf
-
 DISTRO        = "vd100"
 DISTRO_NAME   = "VD100 Linux"
 DISTRO_VERSION = "1.0"
@@ -389,94 +393,43 @@ PACKAGE_CLASSES = "package_rpm"
 
 43 Xilinx recipes produce invalid deb package names. RPM is mandatory.
 
-### Default user
-
-```bitbake
-# EXTRA_USERS_PARAMS must use = not ?=
-# amd-edf.conf sets ?= first — vd100.conf ?= is silently ignored
-EXTRA_USERS_PARAMS = "\
-    useradd -m -G sudo adilson; \
-    usermod -p '\$6\$...' adilson; \
-"
-inherit extrausers
-```
-
-Generate the SHA-512 hash: `openssl passwd -6 yourpassword`
-
-### IMAGE_INSTALL
-
-```bitbake
-IMAGE_INSTALL:append = " devmem2 os-release \
-    helloworld \
-    myledip \
-    libgpiod libgpiod-tools libgpiod-dev libgpiodcxx"
-```
-
-| Package | Recipe location | Function |
-|---|---|---|
-| `helloworld` | `recipes-apps/helloworld` | PS LED control via libgpiod (LPD_MIO25) |
-| `myledip` | `recipes-modules/myledip` | PL LED kernel module via AXI-lite |
-
 ### EFI staging — python prefuncs (not shell prepend)
 
-`do_image_wic:prepend` shell functions are **skipped** when sstate cache is active. Use python prefuncs — guaranteed to execute regardless of cache state:
+`do_image_wic:prepend` shell functions are **skipped** when sstate cache is active.
+Use python prefuncs — guaranteed to execute regardless of cache state:
 
 ```bitbake
 do_image_wic[prefuncs] += "stage_efi_files"
-
 python stage_efi_files() {
     # Stage BOOTAA64.EFI, loader.conf, edf-linux.conf
-    # All EFI boot files assembled here before wic runs
 }
-```
-
-`BOOTAA64.EFI` is sourced from:
-```
-${IMAGE_ROOTFS}/usr/lib/systemd/boot/efi/systemd-bootaa64.efi
 ```
 
 ### Upstream bug — `systemd-bootconf-edf`
 
-The `meta-amd-edf` recipe deploys `edf-linux.conf` to `loader/` instead of `loader/entries/`. Fix via bbappend:
-
-```bitbake
-# meta-vd100_v2/recipes-core/systemd/systemd-bootconf-edf_1.00.bbappend
-# Relocate entry to correct path so systemd-boot finds it
-```
+The `meta-amd-edf` recipe deploys `edf-linux.conf` to `loader/` instead of
+`loader/entries/`. Fixed via bbappend in each meta layer.
 
 ### NTP (no RTC battery on VD100)
 
 ```bitbake
-# meta-vd100_v2/recipes-core/systemd/systemd_%.bbappend
 PACKAGECONFIG:append = " timesyncd"
 ```
-
-Time syncs from network on every boot. The missing RTC battery is irrelevant in practice.
 
 ---
 
 ## SDK Cross-Compile Workflow
 
 ```bash
-# Source the SDK environment
 source /opt/vd100/sdk/<version>/environment-setup-cortexa72-cortexa53-vd100-linux
-
-# Cross-compile PS application (TARGET_VENDOR = -vd100)
-$CXX $CFLAGS helloworld.cpp -o helloworld $LDFLAGS -lgpiodcxx -lgpiod
-
-# Verify target architecture
-file helloworld   # must show: ELF 64-bit LSB, ARM aarch64
-
-# Deploy via RPM
-scp helloworld.rpm user@192.168.0.x:~
-ssh user@192.168.0.x "sudo rpm -i helloworld.rpm"
+$CXX $CFLAGS app.cpp -o app $LDFLAGS
+file app   # must show: ELF 64-bit LSB, ARM aarch64
 ```
 
-> Never manually specify `-I` include paths. The SDK environment variables carry the complete sysroot.  
-> `SDKTARGETSYSROOT` is an SDK variable — undefined in bitbake context. Do not use in Makefiles.  
-> Makefiles must use `$(CXX) $(CFLAGS) $(LDFLAGS)` only — SDK env overrides them at build time.
+> Never manually specify `-I` include paths — the SDK environment carries the
+> complete sysroot. `SDKTARGETSYSROOT` is undefined in bitbake context.
 
-Cross-compiler tuple: `aarch64-vd100-linux` (set by `TARGET_VENDOR = "-vd100"` in machine config).
+Cross-compiler tuple: `aarch64-vd100-linux` (`TARGET_VENDOR = "-vd100"`).
 
 ---
 
@@ -487,43 +440,14 @@ bitbake -c cleansstate sdt-artifacts device-tree virtual/dtb
 bitbake edf-linux-disk-image
 ```
 
-Only the boot partition (`mmcblk1p1`) needs updating after a DTB-only change. Copy updated files to the mounted EFI partition — no full `dd` required.
-
----
-
-## Confirmed Working
-
-| Feature | v1 | v2 |
-|---|---|---|
-| Cold boot → Linux login | Y | Y |
-| Automatic boot (no intervention) | Y | Y |
-| SD card — mode `0101` (SD 2.0) | Y | Y |
-| SD card — mode `1110` (SD 3.0 LS) | Y | Y |
-| Ethernet (GEM `ff0c0000`) | Y | Y |
-| USB XHCI | Y | Y |
-| SSH access | Y | Y |
-| Custom distro name (`vd100`) | — | Y |
-| RPM package deployment | Y | Y |
-| Custom C++ application | Y | Y |
-| Custom PL bitstream (PDI) | Y | Y |
-| I2C0 / I2C1 / I2C2 | — | Y |
-| LM75 board temperature sensor | — | Y |
-| EEPROM Atmel 24C04 | — | Y |
-| Versal sysmon die temperature | — | Y |
-| PS_LED1 GPIO via libgpiod v2 (`helloworld`) | — | Y |
-| PL LED via AXI-lite kernel module (`myledip`) | — | Y |
-| Persistent LED state | — | Y |
-| Yocto SDK cross-compile | — | Y |
-| NTP time sync (no RTC battery) | — | Y |
+Only the boot partition (`mmcblk1p1`) needs updating after a DTB-only change.
 
 ---
 
 ## Development Environment
 
 - **FPGA Toolchain:** Vivado / Vitis 2025.2 ML Enterprise
-- **Hardware project:** `ledblink` — AXI-lite PL LED IP + CIPS configuration
-- **Board bring-up:** VHDL, bare-metal, no IP integrator dependencies
-- **Yocto customisation:** Custom `meta-vd100_v2` layer, SDT-based BSP
+- **Yocto customisation:** Custom meta layers, SDT-based BSP
 - **Serial console:** PL011 UART at `ff000000`, 115200 8N1
 - **Remote access:** SSH over GEM Ethernet
 
@@ -531,8 +455,12 @@ Only the boot partition (`mmcblk1p1`) needs updating after a DTB-only change. Co
 
 ## Related Projects
 
-This bring-up is part of a broader FPGA systems portfolio for data processing on Versal, Kintex-7 and Artix-7 platforms. The PS bring-up work here underpins AXI-connected PL IP and kernel driver development for hardware-accelerated applications.
+| Repository | Description |
+|---|---|
+| [vd100-aie-pipeline](https://github.com/adilsondias-engineer/vd100-aie-pipeline) | AIE-ML v2 MA crossover pipeline — Vivado BD, Vitis system project, XRT host app |
+
+This bring-up is part of a broader FPGA systems portfolio for data processing on Versal, Kintex-7 and Artix-7 platforms.
 
 ---
 
-*XCVE2302 — Versal AI Edge — Yocto Scarthgap — AMD EDF 25.11 — Vivado 2025.2*
+*XCVE2302 — Versal AI Edge — Yocto Scarthgap — AMD EDF 25.11 — Vivado/Vitis 2025.2*
