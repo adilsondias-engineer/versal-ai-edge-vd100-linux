@@ -457,7 +457,7 @@ Only the boot partition (`mmcblk1p1`) needs updating after a DTB-only change.
 
 | Repository | Description |
 |---|---|
-| [vd100-aie-pipeline](https://github.com/adilsondias-engineer/vd100-aie-pipeline) | AIE-ML v2 MA crossover pipeline — Vivado BD, Vitis system project, XRT host app |
+| [vd100-aie-pipeline](https://github.com/adilsondias-engineer/vd100-aie-pipeline) | AIE-ML MA crossover pipeline — Vivado BD, Vitis system project, XRT host app |
 
 This bring-up is part of a broader FPGA systems portfolio for data processing on Versal, Kintex-7 and Artix-7 platforms.
 
