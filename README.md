@@ -67,7 +67,7 @@ This project:
 - Documents every hardware quirk specific to the VD100 that no reference design covers
 - Brings up all onboard PS peripherals: Ethernet, USB, I2C, sysmon, temperature sensor, EEPROM, GPIO
 - Demonstrates **PS/PL co-design**: PS LED via libgpiod, PL LED via AXI-lite kernel module
-- Delivers a **complete AIE-ML v2 pipeline** (v3): HLS DMA + AIE graph + XRT host app + Ethereum audit log — first documented end-to-end integration on accessible Versal hardware
+- Delivers a **complete AIE-ML pipeline** (v3): HLS DMA + AIE graph + XRT host app + Ethereum audit log — first documented end-to-end integration on accessible Versal hardware
 
 ---
 
